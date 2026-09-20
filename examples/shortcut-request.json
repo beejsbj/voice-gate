@@ -1,0 +1,22 @@
+{
+  "name": "Voice Gate turn request",
+  "description": "Generic Apple Shortcuts HTTP Request action values. Replace placeholders with a Shortcut variable or a token stored in the device password manager.",
+  "request": {
+    "method": "POST",
+    "url": "http://127.0.0.1:8000/v1/turns",
+    "headers": {
+      "Authorization": "Bearer ${VOICE_GATE_TOKEN}",
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "json_body": {
+      "text": "${Shortcut Dictation Text}",
+      "request_id": "${UUID}",
+      "source": "shortcut",
+      "start_ms": 0,
+      "end_ms": 0
+    },
+    "wait_for_response": true,
+    "timeout_seconds": 25
+  }
+}

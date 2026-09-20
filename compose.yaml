@@ -1,0 +1,21 @@
+services:
+  voice-gate:
+    build: .
+    env_file: .env
+    environment:
+      VG_DATABASE: /data/captures.sqlite
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - captures:/data
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 384m
+volumes:
+  captures:

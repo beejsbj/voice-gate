@@ -1,0 +1,7 @@
+{
+  "name": "voice-gate-browser-checks",
+  "private": true,
+  "type": "module",
+  "scripts": {"test:browser": "node tests/browser.mjs"},
+  "devDependencies": {"playwright-core": "1.63.0"}
+}

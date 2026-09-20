@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "voice-gate"
+version = "0.1.0"
+description = "A self-hosted Jev decision engine for voice and text clients"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "httpx>=0.28,<1", "typesafe-sdk>=0.6,<1", "mcp>=1.26,<3"]
+
+[project.scripts]
+voice-gate = "voice_gate.cli:main"
+voice-gate-mcp = "voice_gate.mcp_bridge:main"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.25,<2"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["voice_gate"]

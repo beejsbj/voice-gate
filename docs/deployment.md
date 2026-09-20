@@ -1,0 +1,19 @@
+# Deployment and operations
+
+Configure provider, client tokens and named targets through environment variables or a mounted `VG_CONFIG_FILE` JSON secret. The repository's defaults contain no deployment address or credential. Keep `.env`, secret files and the capture database out of Git. The example Compose publishes only loopback; a public/private HTTPS exposure decision belongs to the operator.
+
+Use one Uvicorn worker. In-memory sessions hold generations, consumed IDs, current work, six recent context turns, up to 64 decisions, and bounded idempotency records. HTTP and MCP clients share the same engine instead of running separate local classification engines. A reverse proxy can route both API and browser on one HTTPS origin; configure forwarded-header trust only for your own proxy network.
+
+Recommended personal deployment: private-network HTTPS, application bearer auth, no raw host port, separate provider/client credentials, a nonroot container, read-only image filesystem, a writable capture volume, a memory limit and `/healthz` process checks. Process liveness does not prove that Jev or assistant targets are reachable; use a small synthetic transcript and explicitly confirmed harmless target call for that check.
+
+`VG_TOKENS` is a JSON mapping from client identity to a secret of at least 24 characters. Generate random tokens. Distinct identities are isolated. Sharing a token across your own devices shares the capture collection. Rotation consists of replacing the configured secret and restarting; old browser cookies are invalidated by restart. There is no public signup, token-in-URL authentication, automatic credential provisioning, or default password.
+
+Limits in v0.1: 32 KB HTTP body; 4,000 characters per transcript; two concurrent provider calls; 20-second provider/target bound; 60 judgment/dispatch budget units per client per minute; 128 sessions; 256 consumed turns per session; 2,048 in-memory idempotency keys; 5,000 captures per client; 64 KB target response. Excess is rejected or shown as uncertainty rather than silently executing. Defaults are conservative resource controls, not a full abuse/security guarantee for public hosting.
+
+Captures alone persist when `VG_DATABASE` points to a file. SQLite uses rollback journaling. Use the SQLite backup API or stop the service before a filesystem-only backup. Export captures through the API before retention changes. Session expiry keeps saved captures; `discard` removes that session's captures and cached transcript results. Deleting a capture does not purge the current session's original transcript decision—discard the session for that. Provider-side retention is separate.
+
+Target adapters accept only named operator-defined URLs. `health` performs a GET and whitelists status/platform/version; `webhook` sends a versioned confirmed-command envelope; `openai` sends the original command as a user message. They do not follow redirects or retry automatically. Tokens can be read from the environment variable named by a target's `token_env`. The target owns permission enforcement; Voice Gate does not guarantee safe tool behavior inside an arbitrary assistant.
+
+Deploy from a tested Git commit and keep its image tag/digest. Rollback means stop the new container and restart the prior image with the same configuration/data (v0.1 creates only the captures table). Back up route/proxy changes separately and restore only this service's prior route. Avoid exposing provider keys in build arguments, image layers, logs or health output.
+
+No physical microphone trial is implied by an automated Web Speech callback test. Test browser permission, real dictation, cancellation and phone ergonomics on each device you intend to use. Unsupported browsers can use OS dictation into the text box or any transcription frontend that submits the same API.
