@@ -11,14 +11,14 @@ export class AmbientListener {
   if(!this.active||generation!==this.generation)return;
   const r=new this.Speech();this.recognition=r;this.onState('starting');
   r.lang='en-US';r.continuous=true;r.interimResults=true;
-  let consumed=0,results=[],started=performance.now();
+  const openedAt=performance.now();let consumed=0,results=[],started=openedAt;
   const valid=()=>this.active&&generation===this.generation&&this.recognition===r;
   const flush=(ending=false)=>{
    if(!valid())return;
    let pending=results.slice(consumed);if(ending){const firstInterim=pending.findIndex(x=>!x.final);if(firstInterim>=0)pending=pending.slice(0,firstInterim);}
    if(!pending.length||pending.some(x=>!x.final))return;
-   const text=pending.map(x=>x.text).join(' ').trim();consumed+=pending.length;
-   if(text){this.onTurn({text,start_ms:Math.round(started),end_ms:Math.round(performance.now())});started=performance.now();}
+   const text=pending.map(x=>x.text).join(' ');consumed+=pending.length;
+   if(text.trim()){this.onTurn({text,start_ms:Math.round(started),end_ms:Math.round(performance.now())});started=performance.now();}
    this.onPreview('');
   };
   r.onstart=()=>{if(valid())this.onState('listening');};
@@ -33,7 +33,9 @@ export class AmbientListener {
   r.onend=()=>{
    if(!valid())return;clearTimeout(this.quiet);flush(true);this.recognition=null;this.onPreview('');
    if(!this.active)return;
-   const now=Date.now();this.restarts=this.restarts.filter(t=>now-t<60000);this.restarts.push(now);
+   const now=Date.now();this.restarts=this.restarts.filter(t=>now-t<60000);
+   // Ordinary long idle endings are not a reconnect failure. Only bound rapid loops.
+   if(performance.now()-openedAt<2000)this.restarts.push(now);else this.restarts=[];
    if(this.restarts.length>12){this.error('Speech service keeps disconnecting. Listening stopped; start again when it is available.');return;}
    this.onState('reconnecting');this.restart=setTimeout(()=>this.open(generation),this.restartMs);
   };

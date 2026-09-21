@@ -36,3 +36,9 @@ test('service end preserves final prefix before an unfinished tail',()=>{
  const {a,calls,turns,result}=setup();a.start();result(calls[0],[['Keep this thought.',true],['unfinished',false]]);calls[0].onend();
  assert.deepEqual(turns.map(t=>t.text),['Keep this thought.']);a.stop();
 });
+
+test('rapid service-ending loops eventually stop visibly',async()=>{
+ const {a,calls,errors}=setup();a.start();
+ for(let i=0;i<13;i++){calls.at(-1).onend();await wait(10);}
+ assert.equal(a.active,false);assert.match(errors[0],/disconnecting/);a.stop();
+});
