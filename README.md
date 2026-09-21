@@ -1,4 +1,6 @@
-# Voice Gate
+# Ambient
+
+An ambient voice assistant in development, powered by the Voice Gate engine.
 
 A self-hosted Jev engine that turns completed speech or typed text into **ordinary speech, a command, a retained thought, uncertainty, or no action**.
 
@@ -51,14 +53,14 @@ For streaming partials, create a session, submit versioned transcripts, and subs
 
 | Surface | Included route |
 | --- | --- |
-| Browser / phone browser | Responsive UI with typed input, explicit one-utterance microphone, replay, retained thoughts and confirmed handoffs |
+| Browser / phone browser | Responsive UI with opt-in continuous ambient listening, typed input, replay, retained thoughts and confirmed handoffs |
 | Mac menu bar | SwiftBar plugin example; opens the web capture surface and shows retained count |
 | Phone Shortcuts | HTTP JSON recipe; use the phone's dictation action, then POST the result |
 | Hermes / Claude / Codex / compatible agent hosts | Official-SDK stdio MCP bridge and CLI; tools call your configured engine URL |
 | T3 | Configure the relevant underlying agent harness; no T3-specific plugin is claimed |
 | Your app | Versioned HTTP API, SSE snapshots, Python client and OpenAPI schema |
 
-The microphone is off until clicked and stops after one utterance. Browser speech support varies; keyboard dictation or another transcription client can submit the same API payload. Physical Mac/phone microphone trials and native app packaging are not claimed by the automated tests.
+Click **Start ambient listening** once. The microphone stays armed across utterances and automatically reconnects after normal speech-service endings; no wake word or per-turn click is needed. Final text waits for a quiet window before being queued to the engine. Stop, pause, discard, permission errors, engine disconnection and provider failures stop listening. Queues and reconnect attempts are bounded. Browser speech support varies; keyboard dictation or another transcription client can submit the same API payload. Keep the browser page open and the device awake. A browser is not a dependable screen-locked/background audio service. Physical Mac/phone microphone trials and native app packaging are not claimed by the automated tests. The always-available native device listener and automatic assistant execution remain unfinished; this release provides continuous browser capture and decision routing.
 
 `VG_TARGETS` configures destinations by name. Supported adapters:
 
@@ -98,6 +100,7 @@ Voice Gate incorporates the useful patterns: shared typed/speech input, complete
 ```sh
 uv run pytest -q
 node --check voice_gate/web/app.js
+node --test tests/ambient.test.mjs
 npm ci
 CHROME_BIN=/path/to/chrome npm run test:browser
 ```

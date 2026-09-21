@@ -13,3 +13,4 @@ jobs:
       - run: uv sync --frozen
       - run: uv run pytest -q
       - run: node --check voice_gate/web/app.js
+      - run: node --test tests/ambient.test.mjs

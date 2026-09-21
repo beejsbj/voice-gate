@@ -66,8 +66,10 @@ transcript text into the menu, where it could be exposed by a screenshot or a
 shared menu bar. `menu_escape()` is kept in the example for any operator who
 adds a safe, deliberately chosen non-sensitive menu label.
 
-The plugin is a status client; it is not a microphone recorder or a native
-audio application. Feed it completed text from an existing dictation tool.
+The plugin is a status client; it is not a native ambient microphone recorder.
+Open the browser and start ambient listening for continuous capture while that
+page remains running. A native background listener is still required for
+dependable capture when the browser is closed or the device locks.
 
 ## iPhone Shortcuts and a phone
 

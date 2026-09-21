@@ -62,7 +62,7 @@ class Engine:
 
     def snapshot(self,s):
         return copy.deepcopy({'id':s.id,'name':s.name,'epoch':s.epoch,'sequence':s.sequence,
-            'paused':s.paused,'speaking':s.speaking,'current':s.current,'notice':s.notice,
+            'paused':s.paused,'speaking':s.speaking,'turns_used':len(s.closed)+(1 if s.current else 0),'current':s.current,'notice':s.notice,
             'decisions':s.decisions,'recent':s.recent,'captures':self.store.list(s.owner,s.id)})
 
     def changed(self,s):

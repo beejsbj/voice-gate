@@ -57,7 +57,7 @@ def create_app(settings=None,judge=None,store=None,dispatcher=None):
         response.headers['Cache-Control']='no-store'
         response.headers['X-Content-Type-Options']='nosniff'
         response.headers['Referrer-Policy']='no-referrer'
-        if request.url.path in {'/','/app.js','/style.css'}:
+        if request.url.path in {'/','/app.js','/ambient.js','/style.css'}:
             response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'"
         return response
 
@@ -174,8 +174,10 @@ def create_app(settings=None,judge=None,store=None,dispatcher=None):
     async def index():return FileResponse(WEB/'index.html')
     @app.get('/app.js',include_in_schema=False)
     async def script():return FileResponse(WEB/'app.js',media_type='text/javascript')
+    @app.get('/ambient.js',include_in_schema=False)
+    async def ambient_script():return FileResponse(WEB/'ambient.js',media_type='text/javascript')
     @app.get('/style.css',include_in_schema=False)
     async def css():return FileResponse(WEB/'style.css',media_type='text/css')
     @app.get('/manifest.webmanifest',include_in_schema=False)
-    async def manifest():return {'name':'Voice Gate','short_name':'Voice Gate','start_url':'/','display':'standalone','background_color':'#eef2ee','theme_color':'#245d4a'}
+    async def manifest():return {'name':'Ambient','short_name':'Ambient','start_url':'/','display':'standalone','background_color':'#eef2ee','theme_color':'#245d4a'}
     return app
