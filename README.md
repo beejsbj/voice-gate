@@ -6,7 +6,11 @@ A self-hosted Jev engine that turns completed speech or typed text into **ordina
 
 Run one engine wherever you choose. Call it from a Mac menu bar, a phone Shortcut, a browser, or an agent through HTTP, the CLI, or MCP. Transcription belongs to the client; Voice Gate receives text. No machine address, provider credential, or assistant destination is built into the engine.
 
-## Start locally
+## Listen from your Mac
+
+The [native Ambient menu-bar client](docs/macos.md) keeps listening when the browser closes. Build it with Apple’s Command Line Tools, configure your engine URL and client token, then choose **Ambient → Start listening**. It uses on-device speech recognition, stays armed between utterances, and offers Pause/Discard/Quit. It launches paused and asks for microphone/speech permission on first use.
+
+## Start the engine locally
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
@@ -54,13 +58,13 @@ For streaming partials, create a session, submit versioned transcripts, and subs
 | Surface | Included route |
 | --- | --- |
 | Browser / phone browser | Responsive UI with opt-in continuous ambient listening, typed input, replay, retained thoughts and confirmed handoffs |
-| Mac menu bar | SwiftBar plugin example; opens the web capture surface and shows retained count |
+| Mac menu bar | Native Ambient microphone client; optional SwiftBar status example |
 | Phone Shortcuts | HTTP JSON recipe; use the phone's dictation action, then POST the result |
 | Hermes / Claude / Codex / compatible agent hosts | Official-SDK stdio MCP bridge and CLI; tools call your configured engine URL |
 | T3 | Configure the relevant underlying agent harness; no T3-specific plugin is claimed |
 | Your app | Versioned HTTP API, SSE snapshots, Python client and OpenAPI schema |
 
-Click **Start ambient listening** once. The microphone stays armed across utterances and automatically reconnects after normal speech-service endings; no wake word or per-turn click is needed. Final text waits for a quiet window before being queued to the engine. Stop, pause, discard, permission errors, engine disconnection and provider failures stop listening. Queues and reconnect attempts are bounded. Browser speech support varies; keyboard dictation or another transcription client can submit the same API payload. Keep the browser page open and the device awake. A browser is not a dependable screen-locked/background audio service. Physical Mac/phone microphone trials and native app packaging are not claimed by the automated tests. The always-available native device listener and automatic assistant execution remain unfinished; this release provides continuous browser capture and decision routing.
+Click **Start ambient listening** once. The microphone stays armed across utterances and automatically reconnects after normal speech-service endings; no wake word or per-turn click is needed. Final text waits for a quiet window before being queued to the engine. Stop, pause, discard, permission errors, engine disconnection and provider failures stop listening. Queues and reconnect attempts are bounded. Browser speech support varies; keyboard dictation or another transcription client can submit the same API payload. Keep the browser page open and the device awake. A browser is not a dependable screen-locked/background audio service. Physical Mac/phone microphone trials and native app packaging are not claimed by the automated tests. The included native Mac client owns its own microphone process when the browser closes; physical microphone acceptance remains unverified. Automatic assistant execution is not implemented.
 
 `VG_TARGETS` configures destinations by name. Supported adapters:
 

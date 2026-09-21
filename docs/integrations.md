@@ -49,6 +49,8 @@ retry.
 
 ## Mac menu bar
 
+For persistent microphone capture, use the [native Ambient client](macos.md). It keeps an explicitly started listening session running independently of the browser and uses on-device transcription. The SwiftBar example below is an optional status-only client.
+
 Use the repository's Python environment to run the plugin. Create an executable
 `voice-gate.1m.sh` in SwiftBar's plugin directory containing:
 
@@ -68,8 +70,8 @@ adds a safe, deliberately chosen non-sensitive menu label.
 
 The plugin is a status client; it is not a native ambient microphone recorder.
 Open the browser and start ambient listening for continuous capture while that
-page remains running. A native background listener is still required for
-dependable capture when the browser is closed or the device locks.
+page remains running. Use the native client when you want to close the browser. Listening through
+device sleep/lock still needs testing on your Mac.
 
 ## iPhone Shortcuts and a phone
 

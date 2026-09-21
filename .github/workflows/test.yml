@@ -14,3 +14,9 @@ jobs:
       - run: uv run pytest -q
       - run: node --check voice_gate/web/app.js
       - run: node --test tests/ambient.test.mjs
+  macos-client:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and check native client without microphone access
+        run: bash clients/macos/build.sh "$RUNNER_TEMP/Ambient.app"
