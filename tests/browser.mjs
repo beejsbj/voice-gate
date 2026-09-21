@@ -39,13 +39,14 @@ await page.waitForFunction(()=>document.querySelector('#micState').textContent==
  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:`${evidence}/phone.png`,fullPage:true});checks.push('Phone layout has no horizontal overflow');
  await page.unroute('**/v1/turns');
  await page.route('**/v1/config',async route=>{const response=await route.fetch();const data=await response.json();data.limits.turns_per_session=1;await route.fulfill({response,json:data});});
+ const createdIds=[];page.on('response',async r=>{if(r.request().method()==='POST'&&r.url().endsWith('/v1/sessions'))createdIds.push((await r.json()).id);});
  let sessionsCreated=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith('/v1/sessions'))sessionsCreated++;});
  await page.reload();await page.waitForSelector('#workspace:visible');await page.click('#mic');await page.waitForFunction(()=>document.querySelector('#micState').textContent==='Listening · microphone ON');
  await page.evaluate(()=>{const r=Object.assign([{transcript:'The weather is nice today.'}],{isFinal:true});window.testSpeech.onresult({results:[r]});});
  await page.waitForFunction(()=>document.querySelector('#decisions').textContent.includes('ordinary'));
  await page.evaluate(()=>{const results=['The weather is nice today.','Could you do that thing from before?'].map(transcript=>Object.assign([{transcript}],{isFinal:true}));window.testSpeech.onresult({results});});
  await page.waitForFunction(()=>document.querySelector('#decisions .badge')?.textContent==='uncertain');
- assert.equal(sessionsCreated,2);assert.equal(await page.locator('#micState').textContent(),'Listening · microphone ON');checks.push('Full ambient sessions rotate automatically while microphone remains armed');
+ assert.equal(sessionsCreated,2);assert.equal((await page.evaluate(id=>fetch('/v1/sessions/'+id).then(r=>r.json()),createdIds[0])).paused,true);assert.equal(await page.locator('#micState').textContent(),'Listening · microphone ON');checks.push('Full ambient sessions rotate automatically while microphone remains armed');
  await page.click('#mic');
  assert.deepEqual(errors,[]);await writeFile(`${evidence}/browser.json`,JSON.stringify({checks,errors,physicalMicrophone:'not tested'},null,2));console.log(JSON.stringify({checks,errors},null,2));
 }finally{if(browser)await browser.close();server.kill('SIGTERM');}

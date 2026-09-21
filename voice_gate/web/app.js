@@ -1,7 +1,7 @@
 import {AmbientListener} from './ambient.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let config,state,captures=[],stream,ambient=null,micStarting=false,queued=0,epoch=0,chain=Promise.resolve(),replaying=false;
+let config,state,captures=[],stream,ambient=null,retiringSession=null,micStarting=false,queued=0,epoch=0,chain=Promise.resolve(),replaying=false;
 const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
 async function api(path,data,method){
  const response=await fetch(path,{method:method||(data===undefined?'GET':'POST'),headers:data===undefined?{}:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data)});
@@ -20,7 +20,7 @@ async function connect(){
  $('samples').innerHTML=config.samples.map((s,i)=>`<button data-sample="${i}">${esc(s.label)}</button>`).join('');
  $('speechInfo').textContent=Speech?'Start once, then speak freely. Listening continues between utterances, without a wake word. Keep this page open; browser or device sleep can interrupt it.':'This browser has no Web Speech support. Type, paste, or use your keyboard’s dictation to submit text.';
  if(stream)stream.close();stream=new EventSource(`/v1/sessions/${state.id}/events`);
- stream.addEventListener('state',e=>{const update=JSON.parse(e.data);if(update.id===state.id){accept(update);loadCaptures().catch(fail);}});
+ stream.addEventListener('state',e=>{const update=JSON.parse(e.data);if(update.id===state.id&&update.id!==retiringSession){accept(update);loadCaptures().catch(fail);}});
  stream.onerror=()=>{abortLocal();$('phase').textContent='Engine disconnected — listening stopped';};
  await loadCaptures();render();
 }
@@ -67,11 +67,15 @@ async function ambientTurn(turn,context){
   try{
    if(localEpoch!==epoch)return;
    if(state.id===context.id&&state.turns_used>=config.limits.turns_per_session){
-    const next=await api('/v1/sessions',{name:'Browser ambient'});if(localEpoch!==epoch)return;
-    context.id=next.id;context.epoch=next.epoch;accept(next);
-    stream?.close();stream=new EventSource(`/v1/sessions/${next.id}/events`);
-    stream.addEventListener('state',e=>{const update=JSON.parse(e.data);if(update.id===state.id){accept(update);loadCaptures().catch(fail);}});
-    stream.onerror=()=>{abortLocal();fail(new Error('Engine disconnected — listening stopped'));};
+    retiringSession=context.id;stream?.close();
+    try{
+     await api(`/v1/sessions/${context.id}/controls`,{action:'pause'});if(localEpoch!==epoch)return;
+     const next=await api('/v1/sessions',{name:'Browser ambient'});if(localEpoch!==epoch)return;
+     context.id=next.id;context.epoch=next.epoch;accept(next);
+     stream=new EventSource(`/v1/sessions/${next.id}/events`);
+     stream.addEventListener('state',e=>{const update=JSON.parse(e.data);if(update.id===state.id&&update.id!==retiringSession){accept(update);loadCaptures().catch(fail);}});
+     stream.onerror=()=>{abortLocal();fail(new Error('Engine disconnected — listening stopped'));};
+    }finally{retiringSession=null;}
    }
    const result=await api('/v1/turns',{...turn,session_id:context.id,epoch:context.epoch,request_id:crypto.randomUUID(),source:'ambient browser microphone'});
    if(localEpoch!==epoch)return;
